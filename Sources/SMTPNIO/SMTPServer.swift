@@ -1,5 +1,6 @@
 import NIO
 import NIOExtras
+import Logging
 
 public final class SMTPServer {
     public struct Configuration {
@@ -15,15 +16,22 @@ public final class SMTPServer {
     private let channel: Channel
     private let configuration: Configuration
     private let serverHandler: SMTPServerHandler
+    private let logger: Logger
 
     public var closeFuture: EventLoopFuture<Void> { channel.closeFuture }
     private(set) var delegate: SMTPServerDelegate?
 
-    init(channel: Channel, configuration: Configuration, serverHandler: SMTPServerHandler) {
+    init(
+        channel: Channel,
+        configuration: Configuration,
+        serverHandler: SMTPServerHandler,
+        logger: Logger
+    ) {
         self.channel = channel
         self.configuration = configuration
         self.serverHandler = serverHandler
-        print("Server started and listening on \(channel.localAddress!)")
+        self.logger = logger
+        self.logger.info("Server started and listening on \(channel.localAddress!)")
     }
 
     public func setDelegate(_ delegate: SMTPServerDelegate?) {
@@ -40,9 +48,10 @@ public final class SMTPServer {
     /// - Returns: A future returning a newly started SMTP server.
     public static func start(
         _ configuration: Configuration,
-        group: EventLoopGroup
+        group: EventLoopGroup,
+        logger: Logger = Logger(label: "com.siebenwurst.smtpnio")
     ) -> EventLoopFuture<SMTPServer> {
-        let serverHandler = SMTPServerHandler(configuration: configuration)
+        let serverHandler = SMTPServerHandler(configuration: configuration, logger: logger)
         let bootstrap = ServerBootstrap(group: group)
             // Set up the ServerChannel
             .serverChannelOption(ChannelOptions.backlog, value: 256)
@@ -66,7 +75,12 @@ public final class SMTPServer {
         }
 
         return promise.map { channel in
-            return SMTPServer(channel: channel, configuration: configuration, serverHandler: serverHandler)
+            SMTPServer(
+                channel: channel,
+                configuration: configuration,
+                serverHandler: serverHandler,
+                logger: logger
+            )
         }
     }
 

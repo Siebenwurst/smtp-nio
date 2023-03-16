@@ -7,6 +7,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias OutboundOut = SMTPResponse
 
     private let configuration: SMTPServer.Configuration
+    private let logger: Logger
 
     private var currentEmail = Email.Pending()
 
@@ -20,8 +21,9 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
 
     public var delegate: SMTPServerDelegate?
 
-    init(configuration: SMTPServer.Configuration) {
+    init(configuration: SMTPServer.Configuration, logger: Logger) {
         self.configuration = configuration
+        self.logger = logger
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -93,12 +95,12 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
-        print(error)
+        logger.error("An error occurred when handling a SMTP request: \(error.localizedDescription)")
         delegate?.onError(error)
     }
 
     func handleData(_ data: String, in context: ChannelHandlerContext) {
-        print("line", data, separator: ":")
+        logger.trace("Line received: \(data)")
         if data.wholeMatch(of: SMTPRequest.regex.body.endOfMessage) != nil {
             if let email = currentEmail.toFinal() {
                 Task { delegate?.received(email: email) }

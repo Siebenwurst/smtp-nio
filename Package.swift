@@ -13,6 +13,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.23.0"),
         .package(url: "https://github.com/apple/swift-nio-transport-services.git", from: "1.15.0"),
         .package(url: "https://github.com/apple/swift-nio-extras.git", from: "1.1.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
     ],
     targets: [
         .target(name: "SMTPNIO", dependencies: [
@@ -22,6 +23,7 @@ let package = Package(
             .product(name: "NIOTLS", package: "swift-nio-ssl"),
             .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
             .product(name: "NIOExtras", package: "swift-nio-extras"),
+            .product(name: "Logging", package: "swift-log"),
         ]),
         .executableTarget(name: "Example", dependencies: ["SMTPNIO"]),
         .testTarget(name: "SMTPNIOTests", dependencies: ["SMTPNIO"]),
