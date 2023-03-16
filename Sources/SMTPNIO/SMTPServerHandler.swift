@@ -58,7 +58,12 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
             )), promise: nil)
         case .any(let data):
             switch currentlyWaitingFor {
-            case .initialMessageFromClient, .done: break
+            case .initialMessageFromClient, .done:
+                context.write(wrapOutboundOut(SMTPResponse(
+                    code: .invalidCommand,
+                    message: "Cannot parse command"
+                )), promise: nil)
+                logger.warning("Unknown data received: \(data)")
             case .mailData, .receivedFromOrMailData:
                 handleData(data, in: context)
             }
@@ -72,8 +77,15 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
         case .transferData(let email):
             Task { delegate?.received(email: email) }
         default:
-            /// Should never happen
-            break
+            context.write(wrapOutboundOut(SMTPResponse(
+                code: .invalidCommand,
+                message: "Cannot parse command"
+            )), promise: nil)
+            logger.warning("Unknown data received: \(data)")
+            // TODO: implement tls and authentication
+            // https://mailtrap.io/blog/smtp-commands-and-responses/
+            // https://mailtrap.io/blog/smtp-security/
+            // https://mailtrap.io/blog/smtp-auth/
 //        case .startTLS:
 //            <#code#>
 //        case .beginAuthentication:
@@ -97,6 +109,10 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     func errorCaught(context: ChannelHandlerContext, error: Error) {
         logger.error("An error occurred when handling a SMTP request: \(error.localizedDescription)")
         delegate?.onError(error)
+        context.writeAndFlush(wrapOutboundOut(SMTPResponse(
+            code: .localError,
+            message: "Unhandled error occurred"
+        )), promise: nil)
     }
 
     func handleData(_ data: String, in context: ChannelHandlerContext) {
