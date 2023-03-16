@@ -9,7 +9,7 @@ enum SMTPRequest {
     case mailFrom(String)
     case recipient(String)
     case data
-    case transferData(Email)
+    case transferData(Email.Send)
     case quit
     /// Is most likely ``authUser(_:)``, ``authPassword(_:)`` or ``transferData(_:)``, depending on the current context.
     ///

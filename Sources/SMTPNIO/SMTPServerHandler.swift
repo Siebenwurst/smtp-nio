@@ -1,6 +1,4 @@
 import NIO
-import struct Foundation.Locale
-import class Foundation.DateFormatter
 
 final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = SMTPRequest
@@ -74,8 +72,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
             )), promise: nil)
             context.close(promise: nil)
             return
-        case .transferData(let email):
-            Task { delegate?.received(email: email) }
+        case .transferData: () // doesn't happen, trust me
         default:
             context.write(wrapOutboundOut(SMTPResponse(
                 code: .invalidCommand,
@@ -146,11 +143,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
                 }
             }
         } else if let (_, dateString) = data.wholeMatch(of: SMTPRequest.regex.body.date)?.output {
-            // RFC 2822
-            let dateFormatter = DateFormatter()
-            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-            dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
-            currentEmail.body.date = dateFormatter.date(from: String(dateString)) ?? .now
+            currentEmail.body.date = rfc2822DateFormatter.date(from: String(dateString)) ?? .now
         } else if let (_, mimeVersion) = data.wholeMatch(of: SMTPRequest.regex.body.mimeVersion)?.output {
             currentEmail.body.mimeVersion = String(mimeVersion)
         } else if let (_, priority) = data.wholeMatch(of: SMTPRequest.regex.body.xPriority)?.output {

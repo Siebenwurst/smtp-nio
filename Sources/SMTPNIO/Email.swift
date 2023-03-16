@@ -5,11 +5,20 @@ public struct EmailAddress {
     public var address: String
 }
 
+/// Parsed email (received from a mail server)
 public struct Email {
     public var sender: String
     public var recipients: [String]
     public var subject: String?
     public var body: Body
+
+    /// Email payload sent to a mail server
+    public struct Send {
+        public var sender: EmailAddress
+        public var recipients: [EmailAddress]
+        public var subject: String
+        public var body: String
+    }
 
     public struct Body {
         public var receivedFrom: String?
