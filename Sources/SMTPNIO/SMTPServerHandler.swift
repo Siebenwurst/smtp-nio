@@ -2,7 +2,7 @@ import NIO
 import struct Foundation.Locale
 import class Foundation.DateFormatter
 
-final class SMTPServerHandler: ChannelInboundHandler {
+final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = SMTPRequest
     typealias OutboundOut = SMTPResponse
 
@@ -17,6 +17,8 @@ final class SMTPServerHandler: ChannelInboundHandler {
         case receivedFromOrMailData
         case done
     }
+
+    public var delegate: SMTPServerDelegate?
 
     init(configuration: SMTPServer.Configuration) {
         self.configuration = configuration
@@ -66,7 +68,7 @@ final class SMTPServerHandler: ChannelInboundHandler {
             context.close(promise: nil)
             return
         case .transferData(let email):
-            print(email)
+            Task { delegate?.received(email: email) }
         default:
             /// Should never happen
             break
@@ -92,14 +94,14 @@ final class SMTPServerHandler: ChannelInboundHandler {
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
         print(error)
+        delegate?.onError(error)
     }
 
     func handleData(_ data: String, in context: ChannelHandlerContext) {
         print("line", data, separator: ":")
         if data.wholeMatch(of: SMTPRequest.regex.body.endOfMessage) != nil {
             if let email = currentEmail.toFinal() {
-                // TODO: send final email through the pipe for further processing
-                print(email)
+                Task { delegate?.received(email: email) }
             }
             currentlyWaitingFor = .done
             context.write(wrapOutboundOut(SMTPResponse(
@@ -126,13 +128,11 @@ final class SMTPServerHandler: ChannelInboundHandler {
                 }
             }
         } else if let (_, dateString) = data.wholeMatch(of: SMTPRequest.regex.body.date)?.output {
-            print(dateString)
             // RFC 2822
             let dateFormatter = DateFormatter()
             dateFormatter.locale = Locale(identifier: "en_US_POSIX")
             dateFormatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss Z"
             currentEmail.body.date = dateFormatter.date(from: String(dateString)) ?? .now
-            print(dateFormatter.string(from: .now))
         } else if let (_, mimeVersion) = data.wholeMatch(of: SMTPRequest.regex.body.mimeVersion)?.output {
             currentEmail.body.mimeVersion = String(mimeVersion)
         } else if let (_, priority) = data.wholeMatch(of: SMTPRequest.regex.body.xPriority)?.output {

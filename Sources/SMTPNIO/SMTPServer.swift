@@ -12,7 +12,24 @@ public final class SMTPServer {
         }
     }
 
-    let configuration: Configuration
+    private let channel: Channel
+    private let configuration: Configuration
+    private let serverHandler: SMTPServerHandler
+
+    public var closeFuture: EventLoopFuture<Void> { channel.closeFuture }
+    private(set) var delegate: SMTPServerDelegate?
+
+    init(channel: Channel, configuration: Configuration, serverHandler: SMTPServerHandler) {
+        self.channel = channel
+        self.configuration = configuration
+        self.serverHandler = serverHandler
+        print("Server started and listening on \(channel.localAddress!)")
+    }
+
+    public func setDelegate(_ delegate: SMTPServerDelegate?) {
+        self.delegate = delegate
+        self.serverHandler.delegate = delegate
+    }
 
     /// Starts a new SMTP server listening on the provided address.
     ///
@@ -25,12 +42,17 @@ public final class SMTPServer {
         _ configuration: Configuration,
         group: EventLoopGroup
     ) -> EventLoopFuture<SMTPServer> {
+        let serverHandler = SMTPServerHandler(configuration: configuration)
         let bootstrap = ServerBootstrap(group: group)
             // Set up the ServerChannel
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             // Initializes Child channels when a connection is accepted to our server
-            .childChannelInitializer { addHandlers(to: $0, configuration: configuration) }
+            .childChannelInitializer {
+                addHandlers(to: $0, configuration: configuration)
+                    .and($0.pipeline.addHandler(serverHandler))
+                    .map { _ in () }
+            }
             // Child channel options
             .childChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 16)
@@ -44,7 +66,7 @@ public final class SMTPServer {
         }
 
         return promise.map { channel in
-            return SMTPServer(channel: channel, configuration: configuration)
+            return SMTPServer(channel: channel, configuration: configuration, serverHandler: serverHandler)
         }
     }
 
@@ -80,17 +102,6 @@ public final class SMTPServer {
             ByteToMessageHandler(LineBasedFrameDecoder()),
             ByteToMessageHandler(SMTPRequestDecoder()),
             MessageToByteHandler(SMTPResponseEncoder()),
-            SMTPServerHandler(configuration: configuration),
         ])
-    }
-
-    private let channel: Channel
-
-    public var closeFuture: EventLoopFuture<Void> { channel.closeFuture }
-
-    init(channel: Channel, configuration: Configuration) {
-        self.channel = channel
-        self.configuration = configuration
-        print("Server started and listening on \(channel.localAddress!)")
     }
 }
