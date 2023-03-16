@@ -121,8 +121,10 @@ final class SendEmailHandler: ChannelInboundHandler {
             if self.useStartTLS {
                 self.send(context: context, command: .startTLS)
                 self.currentlyWaitingFor = .okForStartTLS
-            } else {
+            } else if serverConfiguration.authentication {
                 self.sendAuthenticationStart(context: context)
+            } else {
+                self.currentlyWaitingFor = .okAfterPassword
             }
         case .okForStartTLS:
             self.currentlyWaitingFor = .tlsHandlerToBeAdded
