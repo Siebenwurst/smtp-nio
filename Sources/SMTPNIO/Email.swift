@@ -3,6 +3,11 @@ import struct Foundation.Date
 public struct EmailAddress {
     public var name: String?
     public var address: String
+
+    public init(name: String? = nil, address: String) {
+        self.name = name
+        self.address = address
+    }
 }
 
 /// Parsed email (received from a mail server)
@@ -18,6 +23,13 @@ public struct Email {
         public var recipients: [EmailAddress]
         public var subject: String
         public var body: String
+
+        public init(sender: EmailAddress, recipients: [EmailAddress], subject: String, body: String) {
+            self.sender = sender
+            self.recipients = recipients
+            self.subject = subject
+            self.body = body
+        }
     }
 
     public struct Body {
