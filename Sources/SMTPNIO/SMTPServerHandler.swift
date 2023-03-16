@@ -125,7 +125,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
         } else if let (_, recipients) = data.wholeMatch(of: SMTPRequest.regex.body.to)?.output {
             currentEmail.body.to = []
             for recipient in recipients.split(separator: ",") {
-                if let (_, name, emailAddress) = recipient.wholeMatch(of: SMTPRequest.regex.body.from)?.output {
+                if let (_, name, emailAddress) = recipient.wholeMatch(of: SMTPRequest.regex.emailAddress)?.output {
                     currentEmail.body.to!.append(EmailAddress(name: name.map(String.init(_:)), address: String(emailAddress)))
                 }
             }
