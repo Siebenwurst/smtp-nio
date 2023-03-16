@@ -1,11 +1,13 @@
 // swift-tools-version: 5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
     name: "smtp-nio",
-    products: [.library(name: "SMTPNIO", targets: ["SMTPNIO"])],
+    platforms: [.macOS(.v13)],
+    products: [
+        .library(name: "SMTPNIO", targets: ["SMTPNIO"]),
+        .executable(name: "Example", targets: ["Example"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.48.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.23.0"),
@@ -21,6 +23,7 @@ let package = Package(
             .product(name: "NIOTransportServices", package: "swift-nio-transport-services"),
             .product(name: "NIOExtras", package: "swift-nio-extras"),
         ]),
+        .executableTarget(name: "Example", dependencies: ["SMTPNIO"]),
         .testTarget(name: "SMTPNIOTests", dependencies: ["SMTPNIO"]),
     ]
 )
