@@ -118,6 +118,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
             if let email = currentEmail.toFinal() {
                 Task { delegate?.received(email: email) }
             }
+            currentEmail = Email.Pending()
             currentlyWaitingFor = .done
             context.write(wrapOutboundOut(SMTPResponse(
                 code: .commandComplete,
