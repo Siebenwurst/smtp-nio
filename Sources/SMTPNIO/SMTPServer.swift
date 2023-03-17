@@ -58,7 +58,7 @@ public final class SMTPServer {
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             // Initializes Child channels when a connection is accepted to our server
             .childChannelInitializer {
-                addHandlers(to: $0, configuration: configuration)
+                addHandlers(to: $0, configuration: configuration, logger: logger)
                     .and($0.pipeline.addHandler(serverHandler))
                     .map { _ in () }
             }
@@ -88,6 +88,9 @@ public final class SMTPServer {
     ///
     /// Handler flow on inbound/read events.
     /// ```
+    /// FullTraceHandler
+    ///         |
+    ///         v
     /// BackpressureHandler
     ///         |
     ///         v
@@ -109,9 +112,13 @@ public final class SMTPServer {
     ///         |
     ///         v
     /// BackPressureHandler
+    ///         |
+    ///         v
+    /// FullTraceHandler
     /// ```
-    private static func addHandlers(to channel: Channel, configuration: Configuration) -> EventLoopFuture<Void> {
+    private static func addHandlers(to channel: Channel, configuration: Configuration, logger: Logger) -> EventLoopFuture<Void> {
         channel.pipeline.addHandlers([
+            FullTraceHandler(logger: logger),
             BackPressureHandler(),
             ByteToMessageHandler(LineBasedFrameDecoder()),
             ByteToMessageHandler(SMTPRequestDecoder()),

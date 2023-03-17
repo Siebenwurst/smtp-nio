@@ -2,11 +2,13 @@ import NIO
 import NIOTransportServices
 import NIOExtras
 import NIOSSL
+import Logging
 
 public enum SMTPClient {
     public static func sendEmail(
         _ email: Email.Send,
         to server: OtherServerConfiguration,
+        logger: Logger,
         group: EventLoopGroup
     ) throws -> EventLoopFuture<Void> {
         let emailSentPromise = group.next().makePromise(of: Void.self)
@@ -15,7 +17,8 @@ public enum SMTPClient {
             group: group,
             email: email,
             server: server,
-            emailSentPromise: emailSentPromise
+            emailSentPromise: emailSentPromise,
+            logger: logger
         )
         let connection = bootstrap.connect(host: server.hostname, port: server.port)
 
@@ -36,9 +39,11 @@ public enum SMTPClient {
     private static func makeHandlers(
         email: Email.Send,
         server: OtherServerConfiguration,
-        emailSentPromise: EventLoopPromise<Void>
+        emailSentPromise: EventLoopPromise<Void>,
+        logger: Logger
     ) -> [ChannelHandler] {
         return [
+            FullTraceHandler(logger: logger, configuration: server),
             ByteToMessageHandler(LineBasedFrameDecoder()),
             SMTPResponseDecoder(),
             MessageToByteHandler(SMTPRequestEncoder()),
@@ -52,7 +57,8 @@ public enum SMTPClient {
         group: EventLoopGroup,
         email: Email.Send,
         server: OtherServerConfiguration,
-        emailSentPromise: EventLoopPromise<Void>
+        emailSentPromise: EventLoopPromise<Void>,
+        logger: Logger
     ) throws -> NIOClientTCPBootstrap {
         let hostname = server.hostname
         let bootstrap: NIOClientTCPBootstrap
@@ -88,7 +94,12 @@ public enum SMTPClient {
         }
 
         return bootstrap.channelInitializer { channel in
-            channel.pipeline.addHandlers(makeHandlers(email: email, server: server, emailSentPromise: emailSentPromise))
+            channel.pipeline.addHandlers(makeHandlers(
+                email: email,
+                server: server,
+                emailSentPromise: emailSentPromise,
+                logger: logger
+            ))
         }
     }
 }
