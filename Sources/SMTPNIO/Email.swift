@@ -74,7 +74,7 @@ public struct Email {
                     xMailer: xMailer,
                     contentType: contentType,
                     contentTransferEncoding: contentTransferEncoding,
-                    content: contentType
+                    content: content
                 )
             }
         }
