@@ -6,7 +6,7 @@
 //
 
 public struct OtherServerConfiguration {
-    public enum TLSConfiguration: String {
+    public enum TLSConfiguration: String, Decodable {
         case startTLS
         case regularTLS
         case insecureNoTLS
