@@ -8,7 +8,7 @@ public enum SMTPClient {
     public static func sendEmail(
         _ email: Email.Send,
         to server: OtherServerConfiguration,
-        logger: Logger,
+        logger: Logger = Logger(label: "com.siebenwurst.smtpnio-client"),
         group: EventLoopGroup
     ) throws -> EventLoopFuture<Void> {
         let emailSentPromise = group.next().makePromise(of: Void.self)
