@@ -124,7 +124,8 @@ final class SendEmailHandler: ChannelInboundHandler {
             } else if serverConfiguration.authentication {
                 self.sendAuthenticationStart(context: context)
             } else {
-                self.currentlyWaitingFor = .okAfterPassword
+                self.send(context: context, command: .mailFrom(self.email.sender.address))
+                self.currentlyWaitingFor = .okAfterMailFrom
             }
         case .okForStartTLS:
             self.currentlyWaitingFor = .tlsHandlerToBeAdded
@@ -143,7 +144,12 @@ final class SendEmailHandler: ChannelInboundHandler {
                 case .failure(let error):
                     self.currentlyWaitingFor = .error(error)
                 case .success:
-                    self.sendAuthenticationStart(context: context)
+                    if self.serverConfiguration.authentication {
+                        self.sendAuthenticationStart(context: context)
+                    } else {
+                        self.send(context: context, command: .mailFrom(self.email.sender.address))
+                        self.currentlyWaitingFor = .okAfterMailFrom
+                    }
                 }
             }
         case .okForOurAuthBegin:
