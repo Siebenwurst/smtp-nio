@@ -61,7 +61,7 @@ public struct Email {
             var content: String?
 
             func toFinal() -> Body? {
-                guard let from, let to, let contentType, let date else { return nil }
+                guard let from, let to, let contentType, let date, let content else { return nil }
                 return Body(
                     receivedFrom: receivedFrom,
                     messageID: messageID,
@@ -74,7 +74,7 @@ public struct Email {
                     xMailer: xMailer,
                     contentType: contentType,
                     contentTransferEncoding: contentTransferEncoding,
-                    content: contentType
+                    content: content
                 )
             }
         }
