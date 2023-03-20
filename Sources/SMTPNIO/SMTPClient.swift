@@ -65,13 +65,19 @@ public enum SMTPClient {
 
         switch (NetworkImplementation.best, server.tlsConfiguration) {
         case (.transportServices, .regularTLS), (.transportServices, .insecureNoTLS):
+            #if canImport(Network)
             if #available(macOS 10.14, iOS 12, tvOS 12, watchOS 3, *) {
                 bootstrap = NIOClientTCPBootstrap(NIOTSConnectionBootstrap(group: group), tls: NIOTSClientTLSProvider())
             } else {
                 logger.critical(".networkFramework is being used on an unsupported platform")
                 fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
             }
+            #else
+            logger.critical(".networkFramework is being used on an unsupported platform")
+            fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
+            #endif
         case (.transportServices, .startTLS):
+            #if canImport(Network)
             if #available(macOS 10.14, iOS 12, tvOS 12, watchOS 3, *) {
                 bootstrap = try NIOClientTCPBootstrap(
                     NIOTSConnectionBootstrap(group: group),
@@ -81,6 +87,10 @@ public enum SMTPClient {
                 logger.critical(".networkFramework is being used on an unsupported platform")
                 fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
             }
+            #else
+            logger.critical(".networkFramework is being used on an unsupported platform")
+            fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
+            #endif
         case (.posix, _):
             bootstrap = try NIOClientTCPBootstrap(
                 ClientBootstrap(group: group),
