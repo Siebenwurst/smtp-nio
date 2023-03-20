@@ -144,7 +144,7 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
                 }
             }
         } else if let (_, dateString) = data.wholeMatch(of: SMTPRequest.regex.body.date)?.output {
-            currentEmail.body.date = rfc2822DateFormatter.date(from: String(dateString)) ?? .now
+            currentEmail.body.date = rfc2822DateFormatter.date(from: String(dateString)) ?? .init()
         } else if let (_, mimeVersion) = data.wholeMatch(of: SMTPRequest.regex.body.mimeVersion)?.output {
             currentEmail.body.mimeVersion = String(mimeVersion)
         } else if let (_, priority) = data.wholeMatch(of: SMTPRequest.regex.body.xPriority)?.output {

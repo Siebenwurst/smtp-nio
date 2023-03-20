@@ -68,6 +68,7 @@ public enum SMTPClient {
             if #available(macOS 10.14, iOS 12, tvOS 12, watchOS 3, *) {
                 bootstrap = NIOClientTCPBootstrap(NIOTSConnectionBootstrap(group: group), tls: NIOTSClientTLSProvider())
             } else {
+                logger.critical(".networkFramework is being used on an unsupported platform")
                 fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
             }
         case (.transportServices, .startTLS):
@@ -77,6 +78,7 @@ public enum SMTPClient {
                     tls: NIOSSLClientTLSProvider(context: sslContext, serverHostname: hostname)
                 )
             } else {
+                logger.critical(".networkFramework is being used on an unsupported platform")
                 fatalError("Network.framework unsupported on this OS, yet it was selected as the best option.")
             }
         case (.posix, _):
