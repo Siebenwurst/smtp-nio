@@ -1,4 +1,5 @@
 import NIO
+import SMTPNIOCore
 import NIOExtras
 import Logging
 

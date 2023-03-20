@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Timo Zacherl on 16.03.23.
-//
-
 public struct OtherServerConfiguration {
     public enum TLSConfiguration: String, Decodable {
         case startTLS
@@ -12,12 +5,12 @@ public struct OtherServerConfiguration {
         case insecureNoTLS
     }
 
-    var hostname: String
-    var port: Int
-    var authentication: Bool
-    var username: String
-    var password: String
-    var tlsConfiguration: TLSConfiguration
+    public var hostname: String
+    public var port: Int
+    public var authentication: Bool
+    public var username: String
+    public var password: String
+    public var tlsConfiguration: TLSConfiguration
 
     /// Initializes a server configuration for sending emails to via ``SMTPClient``.
     /// - Parameters:

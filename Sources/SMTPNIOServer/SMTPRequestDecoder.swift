@@ -1,4 +1,5 @@
 import Foundation
+import SMTPNIOCore
 import NIO
 
 final class SMTPRequestDecoder: ByteToMessageDecoder {

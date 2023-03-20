@@ -2,6 +2,7 @@ import NIO
 import NIOTransportServices
 import NIOExtras
 import NIOSSL
+import SMTPNIOCore
 import Logging
 
 public enum SMTPClient {

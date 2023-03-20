@@ -1,4 +1,5 @@
 import NIO
+import SMTPNIOCore
 
 final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     typealias InboundIn = SMTPRequest

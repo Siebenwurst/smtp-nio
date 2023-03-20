@@ -1,15 +1,8 @@
-//
-//  File.swift
-//  
-//
-//  Created by Timo Zacherl on 16.03.23.
-//
-
 import NIO
 
 final class SMTPResponseDecoder: ChannelInboundHandler, Sendable {
     typealias InboundIn = ByteBuffer
-    typealias InboundOut = SMTPServerResponse
+    typealias InboundOut = SMTPResponse
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         var response = self.unwrapInboundIn(data)
@@ -23,7 +16,7 @@ final class SMTPResponseDecoder: ChannelInboundHandler, Sendable {
             switch (firstCharacter, fourthCharacter) {
             case ("2", " "),
                  ("3", " "):
-                let parsedMessage = SMTPServerResponse.ok(code, remainder)
+                let parsedMessage = SMTPResponse.ok(code, remainder)
                 context.fireChannelRead(self.wrapInboundOut(parsedMessage))
             case (_, "-"):
                 () // intermediate message, ignore

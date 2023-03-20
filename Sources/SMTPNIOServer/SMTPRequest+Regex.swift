@@ -1,21 +1,7 @@
 import RegexBuilder
+import SMTPNIOCore
 
-enum SMTPRequest {
-    case sayHello(clientName: String)
-    case startTLS
-    case beginAuthentication
-    case authUser(String)
-    case authPassword(String)
-    case mailFrom(String)
-    case recipient(String)
-    case data
-    case transferData(Email.Send)
-    case quit
-    /// Is most likely ``authUser(_:)``, ``authPassword(_:)`` or ``transferData(_:)``, depending on the current context.
-    ///
-    /// But might be anything that couldn't be decoded.
-    case any(String)
-    
+extension SMTPRequest {
     enum regex {
         private static let leadingQuote = ChoiceOf { "<"; "\"" }
         private static let trailingQuote = ChoiceOf { ">"; "\"" }
@@ -32,22 +18,22 @@ enum SMTPRequest {
             }
             Anchor.endOfSubject
         }
-        .ignoresCase()
-        
+            .ignoresCase()
+
         static let startTLS = Regex {
             Anchor.startOfSubject
             One("STARTTLS")
             Anchor.endOfSubject
         }
-        .ignoresCase()
-        
+            .ignoresCase()
+
         static let beginAuthentication = Regex {
             Anchor.startOfSubject
             One("AUTH LOGIN")
             Anchor.endOfSubject
         }
-        .ignoresCase()
-        
+            .ignoresCase()
+
         static let mailFrom = Regex {
             Anchor.startOfSubject
             One("MAIL FROM:")
@@ -59,7 +45,7 @@ enum SMTPRequest {
             Self.trailingQuote
             Anchor.endOfSubject
         }
-        .ignoresCase()
+            .ignoresCase()
 
         static let recipient = Regex {
             Anchor.startOfSubject
@@ -72,21 +58,21 @@ enum SMTPRequest {
             Self.trailingQuote
             Anchor.endOfSubject
         }
-        .ignoresCase()
+            .ignoresCase()
 
         static let data = Regex {
             Anchor.startOfSubject
             One("DATA")
             Anchor.endOfSubject
         }
-        .ignoresCase()
+            .ignoresCase()
 
         static let quit = Regex {
             Anchor.startOfSubject
             One("QUIT")
             Anchor.endOfSubject
         }
-        .ignoresCase()
+            .ignoresCase()
 
         enum body {
             private static func leading(_ subject: String.RegexOutput) -> Regex<Regex<Substring>.RegexOutput> {
@@ -114,7 +100,7 @@ enum SMTPRequest {
                 regex.trailingQuote
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let subject = Regex {
                 leading("Subject:")
@@ -123,7 +109,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let from = Regex {
                 leading("From:")
@@ -140,7 +126,7 @@ enum SMTPRequest {
                 SMTPRequest.regex.trailingQuote
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let to = Regex {
                 leading("To:")
@@ -149,7 +135,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let date = Regex {
                 leading("Date:")
@@ -158,7 +144,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let mimeVersion = Regex {
                 leading("MIME-Version:")
@@ -167,7 +153,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let xPriority = Regex {
                 leading("X-Priority:")
@@ -176,7 +162,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let xMailer = Regex {
                 leading("X-Mailer:")
@@ -185,7 +171,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let contentType = Regex {
                 leading("Content-Type:")
@@ -194,7 +180,7 @@ enum SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-            .ignoresCase()
+                .ignoresCase()
 
             static let contentTransferEncoding = Regex {
                 leading("Content-Transfer-Encoding:")
@@ -226,6 +212,6 @@ enum SMTPRequest {
             SMTPRequest.regex.trailingQuote
             Anchor.endOfSubject
         }
-        .ignoresCase()
+            .ignoresCase()
     }
 }

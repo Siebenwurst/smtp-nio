@@ -8,6 +8,7 @@
 import NIO
 import struct Foundation.Date
 import struct Foundation.Data
+import SMTPNIOCore
 
 final class SMTPRequestEncoder: MessageToByteEncoder, Sendable {
     typealias OutboundIn = SMTPRequest
