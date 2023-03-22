@@ -116,7 +116,6 @@ final class SMTPServerHandler: ChannelInboundHandler, RemovableChannelHandler {
     func handleData(_ data: String, in context: ChannelHandlerContext) {
         logger.trace("Line received: \(data)")
         if data.wholeMatch(of: SMTPRequest.regex.body.endOfMessage) != nil {
-            print(currentEmail)
             if let email = currentEmail.toFinal() {
                 Task { delegate?.received(email: email) }
             }
