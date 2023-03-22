@@ -31,14 +31,14 @@ extension Email.Body {
         var content: String?
 
         func toFinal() -> Email.Body? {
-            guard let from, let to, let contentType, let date, let content else { return nil }
+            guard let from, let to, let content else { return nil }
             return Email.Body(
                 receivedFrom: receivedFrom,
                 messageID: messageID,
                 from: from,
                 to: to,
                 subject: subject,
-                date: date,
+                date: date ?? .init(),
                 mimeVersion: mimeVersion,
                 xPriority: xPriority,
                 xMailer: xMailer,
