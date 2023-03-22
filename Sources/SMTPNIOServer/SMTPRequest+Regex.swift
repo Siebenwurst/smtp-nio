@@ -18,21 +18,21 @@ extension SMTPRequest {
             }
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let startTLS = Regex {
             Anchor.startOfSubject
             One("STARTTLS")
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let beginAuthentication = Regex {
             Anchor.startOfSubject
             One("AUTH LOGIN")
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let mailFrom = Regex {
             Anchor.startOfSubject
@@ -45,7 +45,7 @@ extension SMTPRequest {
             Self.trailingQuote
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let recipient = Regex {
             Anchor.startOfSubject
@@ -58,21 +58,21 @@ extension SMTPRequest {
             Self.trailingQuote
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let data = Regex {
             Anchor.startOfSubject
             One("DATA")
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         static let quit = Regex {
             Anchor.startOfSubject
             One("QUIT")
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
 
         enum body {
             private static func leading(_ subject: String.RegexOutput) -> Regex<Regex<Substring>.RegexOutput> {
@@ -90,6 +90,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
+            .ignoresCase()
 
             static let messageID = Regex {
                 leading("Message-ID:")
@@ -100,7 +101,7 @@ extension SMTPRequest {
                 regex.trailingQuote
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let subject = Regex {
                 leading("Subject:")
@@ -109,7 +110,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let from = Regex {
                 leading("From:")
@@ -119,14 +120,18 @@ extension SMTPRequest {
                     }
                     OneOrMore(.whitespace)
                 }
-                SMTPRequest.regex.leadingQuote
+                Optionally {
+                    SMTPRequest.regex.leadingQuote
+                }
                 Capture {
                     OneOrMore(.any)
                 }
-                SMTPRequest.regex.trailingQuote
+                Optionally {
+                    SMTPRequest.regex.trailingQuote
+                }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let to = Regex {
                 leading("To:")
@@ -135,7 +140,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let date = Regex {
                 leading("Date:")
@@ -144,7 +149,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let mimeVersion = Regex {
                 leading("MIME-Version:")
@@ -153,7 +158,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let xPriority = Regex {
                 leading("X-Priority:")
@@ -162,7 +167,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let xMailer = Regex {
                 leading("X-Mailer:")
@@ -171,7 +176,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let contentType = Regex {
                 leading("Content-Type:")
@@ -180,7 +185,7 @@ extension SMTPRequest {
                 }
                 Anchor.endOfSubject
             }
-                .ignoresCase()
+            .ignoresCase()
 
             static let contentTransferEncoding = Regex {
                 leading("Content-Transfer-Encoding:")
@@ -205,13 +210,17 @@ extension SMTPRequest {
                 }
                 OneOrMore(.whitespace)
             }
-            SMTPRequest.regex.leadingQuote
+            Optionally {
+                SMTPRequest.regex.leadingQuote
+            }
             Capture {
                 OneOrMore(.any)
             }
-            SMTPRequest.regex.trailingQuote
+            Optionally {
+                SMTPRequest.regex.trailingQuote
+            }
             Anchor.endOfSubject
         }
-            .ignoresCase()
+        .ignoresCase()
     }
 }
